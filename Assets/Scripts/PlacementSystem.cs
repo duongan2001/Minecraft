@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class PlacementSystem : MonoBehaviour
 {
@@ -19,15 +20,7 @@ public class PlacementSystem : MonoBehaviour
     {
         SelectBlock();
         PlaceBlock();
-    }
-
-    public void SpawnBlock(Vector3 pos, int blockID)
-    {
-        GameObject spawnBlock = Instantiate(blockPrefs[blockID], pos, Quaternion.identity);
-        existedBlock.Add(spawnBlock);
-        int amount = int.Parse(UIManager.uiManager.itemAmounts[blockID].text) - 1;
-        Debug.Log(blockID);
-        UIManager.uiManager.itemAmounts[blockID].text = amount.ToString();
+        ExitGame();
     }
 
     void SelectBlock()
@@ -49,6 +42,15 @@ public class PlacementSystem : MonoBehaviour
         }
     }
 
+    public void SpawnBlock(Vector3 pos, int blockID)
+    {
+        GameObject spawnBlock = Instantiate(blockPrefs[blockID], pos, Quaternion.identity);
+        existedBlock.Add(spawnBlock);
+        int amount = int.Parse(UIManager.uiManager.itemAmounts[blockID].text) - 1;
+        Debug.Log(blockID);
+        UIManager.uiManager.itemAmounts[blockID].text = amount.ToString();
+    }
+
     void PlaceBlock()
     {
         if (Input.GetMouseButtonDown(0))
@@ -59,4 +61,58 @@ public class PlacementSystem : MonoBehaviour
             }
         }
     }
+
+    void SaveGame()
+    {
+        if (existedBlock.Count == 0)
+        {
+            return;
+        }
+
+        List<SaveLoadBlocks> saveLoadBlocks = new List<SaveLoadBlocks>();
+        for (int i = 0; i < existedBlock.Count; i++)
+        {
+            saveLoadBlocks.Add(new SaveLoadBlocks { 
+                id = existedBlock[i].GetComponent<Boxes>().ID - 1,
+                pos = existedBlock[i].transform.position
+            });
+        }
+        string jsonBlock = JsonUtility.ToJson(saveLoadBlocks);
+        File.WriteAllText(Application.dataPath + "save_block.txt", jsonBlock);
+        Debug.Log("Saved blocks");
+
+        List<SaveLoadBlocksAmount> saveLoadBlocksAmount = new List<SaveLoadBlocksAmount>();
+        for (int i = 0; i < 3; i++)
+        {
+            saveLoadBlocksAmount.Add(new SaveLoadBlocksAmount { amount = int.Parse(UIManager.uiManager.itemAmounts[i].text) });
+        }
+        string jsonAmount = JsonUtility.ToJson(saveLoadBlocksAmount);
+        File.WriteAllText(Application.dataPath + "save_amount.txt", jsonAmount);
+        Debug.Log("Saved amount");
+    }
+
+    void LoadGame()
+    {
+        if (File.Exists(Application.dataPath + "save_block.txt"))
+        {
+            string saveString = File.ReadAllText(Application.dataPath + "save_block.txt");
+            //List<SaveLoadBlocks> saveLoadBlocks = JsonUtility.FromJson<SaveLoadBlocks>(saveString);
+        }
+
+        if (File.Exists(Application.dataPath + "save_amount.txt"))
+        {
+
+        }
+    }
+
+    void ExitGame()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            SaveGame();
+            //Application.Quit();
+        }
+    }
+
+
 }
