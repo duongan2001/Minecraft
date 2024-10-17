@@ -109,8 +109,8 @@ public class PlacementSystem : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            SaveGame();
-            //Application.Quit();
+            //SaveGame();
+            Application.Quit();
         }
     }
 
